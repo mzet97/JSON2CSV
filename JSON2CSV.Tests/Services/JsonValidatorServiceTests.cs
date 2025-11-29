@@ -221,14 +221,16 @@ public class JsonValidatorServiceTests
     public void IsValidJson_ValidJsonString_ShouldReturnTrue()
     {
         // Act & Assert
-        _validatorService.IsValidJson(@"{""name"": ""John""}").Should().BeTrue();
+        var result = _validatorService.Validate(@"{""name"": ""John""}");
+        result.IsSuccess.Should().BeTrue();
     }
 
     [Fact]
     public void IsValidJson_InvalidJsonString_ShouldReturnFalse()
     {
         // Act & Assert
-        _validatorService.IsValidJson(@"{""name"": ""John""").Should().BeFalse();
+        var result = _validatorService.Validate(@"{""name"": ""John""");
+        result.IsSuccess.Should().BeFalse();
     }
 
     #endregion

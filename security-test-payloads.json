@@ -1,0 +1,251 @@
+{
+  "description": "Payloads de teste para validação de segurança do JSON2CSV",
+  "version": "1.0",
+  "payloads": [
+    {
+      "name": "Billion Laughs Attack",
+      "description": "Teste de DoS com profundidade excessiva",
+      "expected_result": "Erro de profundidade",
+      "payload": {
+        "lol": [
+          {
+            "lol": [
+              {
+                "lol": [
+                  {
+                    "lol": [
+                      {
+                        "lol": [
+                          {
+                            "lol": [
+                              {
+                                "lol": [
+                                  {
+                                    "lol": [
+                                      {
+                "lol": "1"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "CSV Formula Injection",
+      "description": "Tentativa de injeção de fórmulas maliciosas no CSV",
+      "expected_result": "Campos prefixados com ' para prevenir execução",
+      "payload": [
+        {
+          "nome": "João Silva",
+          "email": "joao@email.com"
+        },
+        {
+          "nome": "=CMD|'calc'!A0",
+          "email": "teste"
+        },
+        {
+          "nome": "@@DDE cmd",
+          "email": "malicioso"
+        },
+        {
+          "nome": "+1+2",
+          "email": "formula"
+        },
+        {
+          "nome": "=SUM(A1:A10)",
+          "email": "excel"
+        }
+      ]
+    },
+    {
+      "name": "Sensitive Data Exposure",
+      "description": "Dados sensíveis devem ser mascarados",
+      "expected_result": "Campos sensíveis com asteriscos",
+      "payload": {
+        "nome": "Maria Santos",
+        "senha": "minhaSenh@123",
+        "token": "abc123def456ghi789",
+        "api_key": "sk_live_xyz789xyz789xyz",
+        "cpf": "123.456.789-00",
+        "cartao": "4532-1234-5678-9010",
+        "email": "maria@email.com"
+      }
+    },
+    {
+      "name": "Large Payload",
+      "description": "JSON maior que 10MB deve ser rejeitado",
+      "expected_result": "Erro 'JSON muito grande'",
+      "payload": {
+        "data": "A".repeat(11 * 1024 * 1024)
+      }
+    },
+    {
+      "name": "Cartesian Explosion",
+      "description": "Múltiplos arrays gerando produto cartesiano",
+      "expected_result": "Máximo 10.000 linhas no CSV",
+      "payload": [
+        {
+          "nome": "Carlos",
+          "emails": [
+            {"endereco": "email1@teste.com"},
+            {"endereco": "email2@teste.com"},
+            {"endereco": "email3@teste.com"},
+            {"endereco": "email4@teste.com"},
+            {"endereco": "email5@teste.com"}
+          ],
+          "telefones": [
+            {"numero": "1111-1111"},
+            {"numero": "2222-2222"},
+            {"numero": "3333-3333"},
+            {"numero": "4444-4444"},
+            {"numero": "5555-5555"},
+            {"numero": "6666-6666"},
+            {"numero": "7777-7777"},
+            {"numero": "8888-8888"},
+            {"numero": "9999-9999"},
+            {"numero": "0000-0000"}
+          ],
+          "enderecos": [
+            {"rua": "Rua A"},
+            {"rua": "Rua B"},
+            {"rua": "Rua C"},
+            {"rua": "Rua D"},
+            {"rua": "Rua E"},
+            {"rua": "Rua F"},
+            {"rua": "Rua G"},
+            {"rua": "Rua H"},
+            {"rua": "Rua I"},
+            {"rua": "Rua J"}
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Malformed JSON",
+      "description": "JSON malformado deve falhar na validação",
+      "expected_result": "Erro de sintaxe com linha e posição",
+      "payload": "{ \"nome\": \"João\", \"idade\": 30"
+    },
+    {
+      "name": "Deeply Nested Array",
+      "description": "Array muito profundo",
+      "expected_result": "Erro de profundidade",
+      "payload": [
+        [
+          [
+            [
+              [
+                [
+                  [
+                    [
+                      [
+                        [
+                          [
+                            [
+                              [
+                                [
+                                  [
+                                    [
+                                      [
+                                        [
+                                          [
+                                            [
+                                              ["valor"]
+                                            ]
+                                          ]
+                                        ]
+                                      ]
+                                    ]
+                                  ]
+                                ]
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "Special Characters in Strings",
+      "description": "Caracteres especiais em strings",
+      "expected_result": "Escape adequado com aspas",
+      "payload": [
+        {
+          "nome": "João \"O Maestro\" Silva",
+          "cidade": "São Paulo, SP",
+          "descricao": "Linha 1\nLinha 2\nLinha 3",
+          "observacao": "Texto com\ttab"
+        }
+      ]
+    },
+    {
+      "name": "File Name Injection",
+      "description": "Tentativa de injeção no nome do arquivo",
+      "expected_result": "Nome sanitizado",
+      "payload": "JSON simples",
+      "file_name_test": "../../../etc/passwd",
+      "expected_safe_file_name": "json2csv_YYYYMMDD_HHMMSS.csv"
+    }
+  ],
+  "security_checks": [
+    {
+      "check": "Profundidade máxima",
+      "limit": 10,
+      "test": "Payloads com 11+ níveis"
+    },
+    {
+      "check": "Tamanho máximo",
+      "limit": "10 MB",
+      "test": "JSON de 11 MB"
+    },
+    {
+      "check": "Elementos máximos",
+      "limit": 100000,
+      "test": "JSON com 100001+ tokens"
+    },
+    {
+      "check": "CSV Rows máximas",
+      "limit": 10000,
+      "test": "Cartesian product de 100x100x100"
+    },
+    {
+      "check": "CSV Columns máximas",
+      "limit": 500,
+      "test": "JSON com 501+ chaves únicas"
+    },
+    {
+      "check": "CSV Formula Sanitization",
+      "limit": "Todos os campos =,+,-,@ prefixados",
+      "test": "Campos começando com fórmulas"
+    },
+    {
+      "check": "Sensitive Data Masking",
+      "limit": "Últimos 4 caracteres visíveis",
+      "test": "JSON com senha, token, api_key"
+    },
+    {
+      "check": "File Name Sanitization",
+      "limit": "Sem caracteres especiais",
+      "test": "Tentativa de path traversal"
+    }
+  ]
+}

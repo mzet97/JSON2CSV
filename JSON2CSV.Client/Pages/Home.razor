@@ -295,9 +295,10 @@
 
         try
         {
-            var fileName = $"json2csv_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            var sanitizedFileName = SanitizeFileName($"json2csv_{timestamp}.csv");
 
-            await JSRuntime.InvokeVoidAsync("downloadFile", fileName, CsvOutput);
+            await JSRuntime.InvokeVoidAsync("downloadFile", sanitizedFileName, CsvOutput);
 
             ShowSuccess("Arquivo CSV baixado com sucesso!");
         }
@@ -305,6 +306,24 @@
         {
             ShowError($"Erro ao baixar arquivo: {ex.Message}");
         }
+    }
+
+    private string SanitizeFileName(string fileName)
+    {
+        if (string.IsNullOrEmpty(fileName))
+            return "arquivo.csv";
+
+        var invalidChars = Path.GetInvalidFileNameChars();
+        var sanitized = new string(fileName.Where(c => !invalidChars.Contains(c)).ToArray());
+
+        sanitized = sanitized.Replace("  ", " ");
+
+        if (sanitized.Length > 100)
+        {
+            sanitized = sanitized.Substring(0, 100);
+        }
+
+        return string.IsNullOrWhiteSpace(sanitized) ? "arquivo.csv" : sanitized;
     }
 
     private void ShowSuccess(string message)

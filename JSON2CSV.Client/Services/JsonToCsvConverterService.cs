@@ -12,6 +12,10 @@ public class JsonToCsvConverterService : IJsonToCsvConverterService
     private const string NewLine = "\r\n";
     private const string NestedSeparator = ".";
 
+    private const int MaxArrayElements = 100;
+    private const int MaxOutputRows = 10000;
+    private const int MaxColumns = 500;
+
     public ConversionResult Convert(string jsonText)
     {
         try
@@ -24,10 +28,18 @@ public class JsonToCsvConverterService : IJsonToCsvConverterService
                 );
             }
 
+            var inputModel = new JsonInputModel { JsonText = jsonText };
+            string maskedJson = jsonText;
+
+            if (inputModel.ContainsSensitiveData())
+            {
+                maskedJson = inputModel.MaskSensitiveData(jsonText);
+            }
+
             JsonDocument document;
             try
             {
-                document = JsonDocument.Parse(jsonText);
+                document = JsonDocument.Parse(maskedJson);
             }
             catch (JsonException)
             {
@@ -117,6 +129,14 @@ public class JsonToCsvConverterService : IJsonToCsvConverterService
                 foreach (var key in row.Keys)
                 {
                     allKeys.Add(key);
+
+                    if (allKeys.Count > MaxColumns)
+                    {
+                        return ConversionResult.Failure(
+                            $"CSV teria {allKeys.Count} colunas. Máximo permitido: {MaxColumns}",
+                            ConversionErrorType.ConversionError
+                        );
+                    }
                 }
             }
         }
@@ -140,6 +160,15 @@ public class JsonToCsvConverterService : IJsonToCsvConverterService
                 }
             }
             csv.AppendLine(string.Join(CsvSeparator.ToString(), values));
+        }
+
+        var outputLines = csv.ToString().Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+        if (outputLines.Length > MaxOutputRows + 1)
+        {
+            return ConversionResult.Failure(
+                $"CSV teria {outputLines.Length - 1} linhas de dados. Máximo permitido: {MaxOutputRows}",
+                ConversionErrorType.ConversionError
+            );
         }
 
         return ConversionResult.Success(csv.ToString());
@@ -251,6 +280,14 @@ public class JsonToCsvConverterService : IJsonToCsvConverterService
             };
         }
 
+        if (items.Count > MaxArrayElements)
+        {
+            return new List<Dictionary<string, string>>
+            {
+                new Dictionary<string, string> { { key, $"[Array com {items.Count} elementos - limite: {MaxArrayElements}]" } }
+            };
+        }
+
         bool allPrimitives = items.All(item =>
             item.ValueKind != JsonValueKind.Object &&
             item.ValueKind != JsonValueKind.Array);
@@ -274,11 +311,27 @@ public class JsonToCsvConverterService : IJsonToCsvConverterService
                 {
                     var expandedRows = ExpandObjectToRows(item, key, depth + 1);
                     allRows.AddRange(expandedRows);
+
+                    if (allRows.Count > MaxOutputRows)
+                    {
+                        return new List<Dictionary<string, string>>
+                        {
+                            new Dictionary<string, string> { { key, $"[Resultado truncado - limite: {MaxOutputRows} linhas]" } }
+                        };
+                    }
                 }
                 else if (item.ValueKind == JsonValueKind.Array)
                 {
                     var nestedRows = ExpandArray(item, key, depth + 1);
                     allRows.AddRange(nestedRows);
+
+                    if (allRows.Count > MaxOutputRows)
+                    {
+                        return new List<Dictionary<string, string>>
+                        {
+                            new Dictionary<string, string> { { key, $"[Resultado truncado - limite: {MaxOutputRows} linhas]" } }
+                        };
+                    }
                 }
                 else
                 {
@@ -391,15 +444,47 @@ public class JsonToCsvConverterService : IJsonToCsvConverterService
             return string.Empty;
         }
 
-        bool needsQuotes = value.Contains(CsvSeparator) ||
-                         value.Contains(Quote) ||
-                         value.Contains('\n') ||
-                         value.Contains('\r');
+        string sanitizedValue = SanitizeCsvFormula(value);
+
+        bool needsQuotes = sanitizedValue.Contains(CsvSeparator) ||
+                         sanitizedValue.Contains(Quote) ||
+                         sanitizedValue.Contains('\n') ||
+                         sanitizedValue.Contains('\r') ||
+                         sanitizedValue.StartsWith("=") ||
+                         sanitizedValue.StartsWith("+") ||
+                         sanitizedValue.StartsWith("-") ||
+                         sanitizedValue.StartsWith("@");
 
         if (needsQuotes)
         {
-            string escapedValue = value.Replace(Quote, DoubleQuote);
+            string escapedValue = sanitizedValue.Replace(Quote, DoubleQuote);
             return Quote + escapedValue + Quote;
+        }
+
+        return sanitizedValue;
+    }
+
+    private string SanitizeCsvFormula(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return value;
+
+        var dangerousPrefixes = new[]
+        {
+            "=", "+", "-", "@"
+        };
+
+        foreach (var prefix in dangerousPrefixes)
+        {
+            if (value.StartsWith(prefix))
+            {
+                return "'" + value;
+            }
+        }
+
+        if (value.Contains("DDE") || value.Contains("CMD"))
+        {
+            return "'" + value;
         }
 
         return value;

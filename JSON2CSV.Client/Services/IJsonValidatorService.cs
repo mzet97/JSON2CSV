@@ -8,7 +8,5 @@ public interface IJsonValidatorService
 
     bool IsEmpty(string jsonText);
 
-    bool IsValidJson(string jsonText);
-
     bool IsTooLarge(string jsonText, int maxSizeInBytes = 10 * 1024 * 1024);
 }
