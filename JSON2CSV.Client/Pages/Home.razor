@@ -1,0 +1,323 @@
+@page "/"
+@using JSON2CSV.Client.Services
+@using JSON2CSV.Client.Models
+@using MudBlazor
+@inject IJsonValidatorService JsonValidatorService
+@inject IJsonToCsvConverterService JsonToCsvConverterService
+@inject ISnackbar Snackbar
+
+<PageTitle>JSON2CSV - Conversor Online</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-4">
+    <MudPaper Elevation="0" Class="pa-4 mb-4">
+        <MudText Typo="Typo.h3" GutterBottom="true" Color="Color.Primary">
+            <strong>JSON2CSV Converter</strong>
+        </MudText>
+        <MudText Typo="Typo.body1" Class="mb-4" Color="Color.Secondary">
+            Converta seu JSON para CSV de forma rápida e fácil!
+        </MudText>
+    </MudPaper>
+
+    <MudPaper Elevation="2" Class="pa-4 mb-4">
+        <MudStack Spacing="4">
+            <MudTextField
+                @bind-Value="JsonInput"
+                Label="JSON de Entrada"
+                Placeholder='[{"nome": "João", "idade": 30, "endereco": {"cidade": "São Paulo", "rua": "Paulista"}}]'
+                Variant="Variant.Outlined"
+                Lines="15"
+                TextChanged="OnJsonInputChanged"
+                Adornment="Adornment.Start"
+                AdornmentIcon="@Icons.Material.Filled.Code"
+                />
+
+            <MudStack Row="true" Spacing="2">
+                <MudButton
+                    Variant="Variant.Filled"
+                    Color="Color.Primary"
+                    OnClick="ConvertJson"
+                    Disabled="@isConverting"
+                    StartIcon="@(isConverting ? Icons.Material.Filled.Loop : Icons.Material.Filled.Transform)"
+                    Size="Size.Large">
+                    @(isConverting ? "Convertendo..." : "Converter para CSV")
+                </MudButton>
+
+                <MudButton
+                    Variant="Variant.Outlined"
+                    Color="Color.Secondary"
+                    OnClick="ClearFields"
+                    StartIcon="@Icons.Material.Filled.ClearAll"
+                    Size="Size.Large">
+                    Limpar
+                </MudButton>
+
+                <MudSpacer />
+
+                <MudButton
+                    Variant="Variant.Outlined"
+                    Color="Color.Info"
+                    OnClick="ToggleTableView"
+                    StartIcon="@Icons.Material.Filled.TableView"
+                    Size="Size.Large">
+                    @(showTable ? "Ocultar Tabela" : "Exibir como Tabela")
+                </MudButton>
+
+                @if (!string.IsNullOrEmpty(CsvOutput))
+                {
+                    <MudButton
+                        Variant="Variant.Filled"
+                        Color="Color.Success"
+                        OnClick="DownloadCsv"
+                        StartIcon="@Icons.Material.Filled.Download"
+                        Size="Size.Large">
+                        Baixar CSV
+                    </MudButton>
+                }
+            </MudStack>
+
+            @if (!string.IsNullOrEmpty(ValidationMessage))
+            {
+                <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Warning">
+                    @ValidationMessage
+                </MudAlert>
+            }
+
+            <MudTextField
+                @bind-Value="CsvOutput"
+                Label="CSV de Saída"
+                Variant="Variant.Outlined"
+                Lines="15"
+                ReadOnly="true"
+                Adornment="Adornment.Start"
+                AdornmentIcon="@Icons.Material.Filled.TableView"
+            />
+
+            @if (showTable && !string.IsNullOrEmpty(CsvOutput))
+            {
+                <MudPaper Elevation="1" Class="pa-2 mt-4">
+                    <MudText Typo="Typo.h6" GutterBottom="true" Class="mb-2">
+                        Visualização em Tabela
+                    </MudText>
+                    <div style="overflow-x: auto;">
+                        <MudTable Items="@CsvTableData" Hover="true" Dense="true" Striped="true" Bordered="true">
+                            <HeaderContent>
+                                @foreach (var header in CsvHeaders)
+                                {
+                                    <MudTh>@header</MudTh>
+                                }
+                            </HeaderContent>
+                            <RowTemplate>
+                                @foreach (var header in CsvHeaders)
+                                {
+                                    <MudTd>@context.GetValueOrDefault(header, "")</MudTd>
+                                }
+                            </RowTemplate>
+                        </MudTable>
+                    </div>
+                </MudPaper>
+            }
+        </MudStack>
+    </MudPaper>
+
+    <MudPaper Elevation="0" Class="pa-4 mt-4">
+        <MudText Typo="Typo.caption" Color="Color.Secondary">
+            <strong>Recursos (Expansão AST):</strong>
+            <br />• ✅ Suporta estruturas aninhadas com expansão automática
+            <br />• ✅ Arrays de objetos geram múltiplas linhas (produto cartesiano)
+            <br />• ✅ Arrays de primitivos são unidos com ";"
+            <br />• ✅ Objetos aninhados usam dot-notation (ex: endereco.rua)
+            <br />• ⚠️ Tamanho máximo: 10MB
+        </MudText>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private string JsonInput { get; set; } = string.Empty;
+    private string CsvOutput { get; set; } = string.Empty;
+    private string ValidationMessage { get; set; } = string.Empty;
+    private bool isConverting = false;
+    private bool showTable = false;
+
+    private List<Dictionary<string, string>> CsvTableData = new();
+    private List<string> CsvHeaders = new();
+
+    private void OnJsonInputChanged(string value)
+    {
+        JsonInput = value;
+        if (!string.IsNullOrEmpty(ValidationMessage))
+        {
+            ValidationMessage = string.Empty;
+        }
+    }
+
+    private async Task ConvertJson()
+    {
+        if (string.IsNullOrWhiteSpace(JsonInput))
+        {
+            ShowError("O campo JSON está vazio. Por favor, insira um JSON válido.");
+            return;
+        }
+
+        isConverting = true;
+        CsvOutput = string.Empty;
+        ValidationMessage = string.Empty;
+        showTable = false;
+
+        try
+        {
+            var validationResult = JsonValidatorService.Validate(JsonInput);
+
+            if (!validationResult.IsSuccess)
+            {
+                ShowError(validationResult.ErrorMessage ?? "JSON inválido.");
+                return;
+            }
+
+            var conversionResult = JsonToCsvConverterService.Convert(JsonInput);
+
+            if (conversionResult.IsSuccess)
+            {
+                CsvOutput = conversionResult.CsvContent ?? string.Empty;
+
+                if (!string.IsNullOrEmpty(CsvOutput))
+                {
+                    ParseCsvForTable(CsvOutput);
+                    ShowSuccess("CSV gerado com sucesso!");
+                }
+                else
+                {
+                    ShowError("A conversão retornou um resultado vazio.");
+                }
+            }
+            else
+            {
+                ShowError(conversionResult.ErrorMessage ?? "Erro desconhecido na conversão.");
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowError($"Erro inesperado: {ex.Message}");
+        }
+        finally
+        {
+            isConverting = false;
+        }
+    }
+
+    private void ClearFields()
+    {
+        JsonInput = string.Empty;
+        CsvOutput = string.Empty;
+        ValidationMessage = string.Empty;
+        showTable = false;
+        CsvTableData.Clear();
+        CsvHeaders.Clear();
+        Snackbar.Clear();
+    }
+
+    private void ToggleTableView()
+    {
+        showTable = !showTable;
+    }
+
+    private void ParseCsvForTable(string csv)
+    {
+        CsvTableData.Clear();
+        CsvHeaders.Clear();
+
+        if (string.IsNullOrEmpty(csv))
+            return;
+
+        var lines = csv.Split(new[] { "\r\n", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+
+        if (lines.Length == 0)
+            return;
+
+        var headers = ParseCsvLine(lines[0]);
+        CsvHeaders.AddRange(headers);
+
+        for (int i = 1; i < lines.Length; i++)
+        {
+            var values = ParseCsvLine(lines[i]);
+            if (values.Count > 0)
+            {
+                var row = new Dictionary<string, string>();
+                for (int j = 0; j < headers.Count && j < values.Count; j++)
+                {
+                    row[headers[j]] = values[j];
+                }
+                CsvTableData.Add(row);
+            }
+        }
+    }
+
+    private List<string> ParseCsvLine(string line)
+    {
+        var result = new List<string>();
+        var currentField = string.Empty;
+        bool inQuotes = false;
+
+        for (int i = 0; i < line.Length; i++)
+        {
+            char c = line[i];
+
+            if (c == '"')
+            {
+                if (inQuotes && i + 1 < line.Length && line[i + 1] == '"')
+                {
+                    currentField += '"';
+                    i++;
+                }
+                else
+                {
+                    inQuotes = !inQuotes;
+                }
+            }
+            else if (c == ',' && !inQuotes)
+            {
+                result.Add(currentField);
+                currentField = string.Empty;
+            }
+            else
+            {
+                currentField += c;
+            }
+        }
+
+        result.Add(currentField);
+        return result;
+    }
+
+    private async Task DownloadCsv()
+    {
+        if (string.IsNullOrEmpty(CsvOutput))
+            return;
+
+        try
+        {
+            var fileName = $"json2csv_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+
+            await JSRuntime.InvokeVoidAsync("downloadFile", fileName, CsvOutput);
+
+            ShowSuccess("Arquivo CSV baixado com sucesso!");
+        }
+        catch (Exception ex)
+        {
+            ShowError($"Erro ao baixar arquivo: {ex.Message}");
+        }
+    }
+
+    private void ShowSuccess(string message)
+    {
+        Snackbar.Add(message, Severity.Success);
+    }
+
+    private void ShowError(string message)
+    {
+        Snackbar.Add(message, Severity.Error);
+        ValidationMessage = message;
+    }
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; } = default!;
+}

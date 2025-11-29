@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="JSON2CSV.Client/JSON2CSV.Client.csproj" />
+  <Project Path="JSON2CSV.Tests/JSON2CSV.Tests.csproj" />
+  <Project Path="JSON2CSV/JSON2CSV.csproj" />
+</Solution>

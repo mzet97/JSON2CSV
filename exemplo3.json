@@ -1,0 +1,93 @@
+[
+  {
+    "nome": "João Silva",
+    "idade": 30,
+    "cidade": "São Paulo",
+    "email": "joao.silva@email.com",
+    "ativo": true,
+    "salario": 5000.50,
+    "endereco": {
+      "rua": "Av. Paulista",
+      "numero": 1000,
+      "bairro": "Bela Vista",
+      "cep": "01310-100"
+    }
+  },
+  {
+    "nome": "Pedro Oliveira",
+    "idade": 35,
+    "cidade": "Belo Horizonte",
+    "email": "pedro.oliveira@email.com",
+    "ativo": true,
+    "salario": 6000.75,
+    "hobebies": [
+      "futebol",
+      "leitura",
+      "viagens"
+    ]
+  },
+  {
+    "nome": "Ana Costa",
+    "idade": 28,
+    "cidade": "Brasília",
+    "email": "ana.costa@email.com",
+    "ativo": true,
+    "salario": 5200.30,
+    "endereco": {
+      "rua": "QS 07 Conjunto 2",
+      "numero": 45,
+      "bairro": "Taguatinga Norte",
+      "cep": "72020-040"
+    },
+    "telefone": {
+      "residencial": "(61) 3344-5566",
+      "celular": "(61) 99876-5432"
+    },
+    "hobebies": [
+      "cinema",
+      "academia"
+    ]
+  },
+  {
+    "nome": "Carlos Mendes",
+    "idade": 42,
+    "cidade": "Salvador",
+    "email": "carlos.mendes@email.com",
+    "ativo": false,
+    "salario": 7500.00,
+    "escolaridade": "Mestrado",
+    "dependentes": [
+      {
+        "nome": "Lucas Mendes",
+        "idade": 12,
+        "parentesco": "Filho",
+        "escolaridade": "Ensino Fundamental",
+        "endereco": {
+          "rua": "Rua das Flores",
+          "numero": 200,
+          "bairro": "Jardim América",
+          "cep": "40050-000"
+        }
+      },
+      {
+        "nome": "Mariana Mendes",
+        "idade": 8,
+        "parentesco": "Filha",
+        "enderecos": [
+          {
+            "rua": "Rua das Flores",
+            "numero": 200,
+            "bairro": "Jardim América",
+            "cep": "40050-000"
+          },
+          {
+            "rua": "Av. Paralela",
+            "numero": 1500,
+            "bairro": "Pituba",
+            "cep": "41810-000"
+          }
+        ]
+      }
+    ]
+  }
+]

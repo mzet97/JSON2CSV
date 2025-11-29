@@ -1,0 +1,106 @@
+# .NET Core
+*.swp
+*~
+.project
+.settings/
+*.sublime-workspace
+.vs/
+.vscode/
+obj/
+bin/
+*.user
+*.suo
+*.userprefs
+*.DotSettings.user
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio 2015/2017 cache/options directory
+.vs/
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NUNIT
+*.VisualState.xml
+TestResult.xml
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+**/Properties/launchSettings.json
+
+# Package Files
+*.nupkg
+*.snupkg
+
+# Application specific
+appsettings.json
+appsettings.*.json
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Coverage
+coverage*.xml
+*.coverage
+*.coveragexml
+**/TestResults/
+
+# JetBrains Rider
+*.sln.iml
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# User-specific files
+*.rsuser
+*.userprefs
+
+# MonoDevelop/Xamarin Studio
+*.userprefs
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# Publish output
+publish/
+
+# Azure Stream Analytics
+ASALocalRun/

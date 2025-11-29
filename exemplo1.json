@@ -1,0 +1,42 @@
+[
+  {
+    "nome": "João Silva",
+    "idade": 30,
+    "cidade": "São Paulo",
+    "email": "joao.silva@email.com",
+    "ativo": true,
+    "salario": 5000.50
+  },
+  {
+    "nome": "Maria Santos",
+    "idade": 25,
+    "cidade": "Rio de Janeiro",
+    "email": "maria.santos@email.com",
+    "ativo": false,
+    "salario": 4500.00
+  },
+  {
+    "nome": "Pedro Oliveira",
+    "idade": 35,
+    "cidade": "Belo Horizonte",
+    "email": "pedro.oliveira@email.com",
+    "ativo": true,
+    "salario": 6000.75
+  },
+  {
+    "nome": "Ana Costa",
+    "idade": 28,
+    "cidade": "Brasília",
+    "email": "ana.costa@email.com",
+    "ativo": true,
+    "salario": 5200.30
+  },
+  {
+    "nome": "Carlos Mendes",
+    "idade": 42,
+    "cidade": "Salvador",
+    "email": "carlos.mendes@email.com",
+    "ativo": false,
+    "salario": 7500.00
+  }
+]

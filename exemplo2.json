@@ -1,0 +1,40 @@
+[
+  {
+    "nome": "João Silva",
+    "idade": 30,
+    "cidade": "São Paulo",
+    "email": "joao.silva@email.com",
+    "ativo": true,
+    "salario": 5000.50,
+    "endereco": {
+      "rua": "Av. Paulista",
+      "numero": 1000,
+      "bairro": "Bela Vista",
+      "cep": "01310-100"
+    }
+  },
+  {
+    "nome": "Pedro Oliveira",
+    "idade": 35,
+    "cidade": "Belo Horizonte",
+    "email": "pedro.oliveira@email.com",
+    "ativo": true,
+    "salario": 6000.75
+  },
+  {
+    "nome": "Ana Costa",
+    "idade": 28,
+    "cidade": "Brasília",
+    "email": "ana.costa@email.com",
+    "ativo": true,
+    "salario": 5200.30
+  },
+  {
+    "nome": "Carlos Mendes",
+    "idade": 42,
+    "cidade": "Salvador",
+    "email": "carlos.mendes@email.com",
+    "ativo": false,
+    "salario": 7500.00
+  }
+]
